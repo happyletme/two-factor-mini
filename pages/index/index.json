@@ -1,0 +1,8 @@
+{
+  "navigationBarBackgroundColor": "#d69e2e",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#f3f4f6",
+  "backgroundTextStyle": "dark",
+  "enablePullDownRefresh": true,
+  "navigationBarTitleText": "工具集合"
+}

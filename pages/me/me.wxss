@@ -1,0 +1,100 @@
+page {
+  background-color: #f7f8fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto,
+    'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
+}
+
+.container {
+  padding: 32rpx 32rpx 80rpx;
+  box-sizing: border-box;
+}
+
+.header {
+  padding: 16rpx 8rpx 24rpx;
+}
+
+.title {
+  font-size: 44rpx;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.desc {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 26rpx;
+  color: #888;
+}
+
+.card {
+  margin-top: 24rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 28rpx;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.03);
+}
+
+/* ---- 按钮：添加页同款风格 ---- */
+.main-btn {
+  width: 100% !important;
+  height: 110rpx;
+  line-height: 110rpx;
+  border-radius: 55rpx;
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  transition: transform 0.1s, filter 0.1s;
+}
+
+.main-btn:active {
+  transform: scale(0.98);
+}
+
+.btn-icon {
+  margin-right: 16rpx;
+  font-size: 36rpx;
+  font-weight: normal;
+}
+
+/* 分享：用添加页“扫描按钮(渐变蓝)” */
+.scan-btn {
+  background: linear-gradient(135deg, #3a7afe, #2563eb);
+  box-shadow: 0 15rpx 30rpx rgba(37, 99, 235, 0.3);
+}
+
+/* 备份：沿用添加页“保存按钮(渐变绿)” */
+.save-btn {
+  background: linear-gradient(135deg, #07c160, #05a350);
+  box-shadow: 0 15rpx 30rpx rgba(7, 193, 96, 0.3);
+}
+
+/* 恢复：危险操作，保持同一质感但改为红色渐变 */
+.danger-btn {
+  background: linear-gradient(135deg, #ff4d4f, #d93025);
+  box-shadow: 0 15rpx 30rpx rgba(217, 48, 37, 0.28);
+}
+
+/* 禁用态：弱化“可点击感” */
+.main-btn[disabled] {
+  opacity: 0.55;
+  filter: grayscale(15%);
+  box-shadow: none;
+}
+
+.hint {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 26rpx;
+  color: #999;
+}
+
+.tip {
+  margin-top: 28rpx;
+  padding: 20rpx 24rpx;
+  color: #666;
+  font-size: 24rpx;
+}

@@ -1,0 +1,49 @@
+<!-- pages/add/add.wxml -->
+<view class="container">
+
+  <!-- 顶部标题 (动态显示) -->
+  <view class="header">
+    <text class="title">{{isEdit ? '编辑账号' : '添加账号'}}</text>
+    <text class="subtitle">{{isEdit ? '修改账号信息' : '手动输入密钥或扫描二维码'}}</text>
+  </view>
+
+  <!-- 表单区域 -->
+  <view class="form-section">
+    <view class="form-group">
+      <view class="label">账号名称</view>
+      <!-- 注意：value="{{name}}" 是必须的，用于回填数据 -->
+      <input
+        class="input"
+        placeholder="例如: Google:alice@gmail.com"
+        placeholder-class="input-placeholder"
+        value="{{name}}"
+        bindinput="bindNameInput"
+      />
+    </view>
+
+    <view class="form-group">
+      <view class="label">密钥 (Secret Key)</view>
+      <!-- 注意：value="{{secret}}" 是必须的 -->
+      <input
+        class="input"
+        placeholder="输入提供的密钥字符串"
+        placeholder-class="input-placeholder"
+        value="{{secret}}"
+        bindinput="bindSecretInput"
+      />
+    </view>
+  </view>
+
+  <!-- 按钮区域 -->
+  <view class="btn-container">
+    <!-- 扫描按钮：编辑模式下也可以保留，方便用户重新扫码更新密钥 -->
+    <button class="main-btn scan-btn" bindtap="scanCode">
+      <text class="btn-icon">📷</text> 扫描二维码
+    </button>
+
+    <!-- 保存按钮 -->
+    <button class="main-btn save-btn" bindtap="saveAccount">
+      <text class="btn-icon">✓</text> 保存账号
+    </button>
+  </view>
+</view>

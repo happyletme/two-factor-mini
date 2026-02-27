@@ -1,0 +1,59 @@
+<view class="exchange-page">
+  <!-- 顶部输入卡 -->
+  <view class="hero-card">
+    <view class="hero-title">实时货币兑换</view>
+    <view class="hero-sub">基准货币：{{baseCurrency}}</view>
+
+    <view class="amount-row">
+      <input
+        class="amount-input"
+        type="digit"
+        value="{{amount}}"
+        placeholder="输入金额"
+        bindinput="onInputAmount"
+      />
+      <!--<view class="swap-btn" bindtap="onSwapWithUSD">⇆</view>-->
+    </view>
+
+    <view class="base-options">
+      <block wx:for="{{hotBaseOptions}}" wx:key="*this">
+        <view
+          class="base-chip {{item === baseCurrency ? 'active' : ''}}"
+          data-code="{{item}}"
+          bindtap="onChangeBase"
+        >
+          {{item}}
+        </view>
+      </block>
+    </view>
+
+    <view class="update-time" wx:if="{{updatedAt}}">更新时间：{{updatedAt}}</view>
+  </view>
+
+  <!-- 状态 -->
+  <view class="state loading" wx:if="{{loading}}">正在获取汇率...</view>
+  <view class="state error" wx:if="{{!loading && errorText}}">{{errorText}}</view>
+
+  <!-- 列表 -->
+  <view class="rate-list" wx:if="{{!loading && !errorText}}">
+    <view class="list-head">
+      <text class="col currency">币种</text>
+      <text class="col rate">汇率</text>
+      <text class="col result">兑换结果</text>
+    </view>
+
+    <block wx:for="{{list}}" wx:key="code">
+      <view class="list-item">
+        <view class="col currency">
+          <text class="flag">{{item.flag}}</text>
+          <view class="name-wrap">
+            <text class="code">{{item.code}}</text>
+            <text class="name">{{item.name}}</text>
+          </view>
+        </view>
+        <text class="col rate">1 {{baseCurrency}} = {{item.rateText}} {{item.code}}</text>
+        <text class="col result">{{item.symbol}}{{item.convertedText}}</text>
+      </view>
+    </block>
+  </view>
+</view>

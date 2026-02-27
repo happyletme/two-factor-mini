@@ -1,0 +1,47 @@
+<view class="page">
+  <view class="card">
+    <view class="header">
+      <text class="title">国际{{symbolLabel}} 历史走势</text>
+
+      <view class="toolbar">
+        <view class="chips">
+          <view
+            class="chip {{symbol==='XAU' ? 'active' : ''}}"
+            data-symbol="XAU"
+            bindtap="onSwitchSymbol"
+          >黄金</view>
+          <view
+            class="chip {{symbol==='XAG' ? 'active' : ''}}"
+            data-symbol="XAG"
+            bindtap="onSwitchSymbol"
+          >白银</view>
+          <view
+            class="chip {{symbol==='HG' ? 'active' : ''}}"
+            data-symbol="HG"
+            bindtap="onSwitchSymbol"
+          >黄铜</view>
+        </view>
+
+        <view class="tabs">
+          <view
+            class="tab {{period==='3m' ? 'active' : ''}}"
+            data-period="3m"
+            bindtap="onSwitchPeriod"
+          >近三月</view>
+          <!--<view
+            class="tab {{period==='1y' ? 'active' : ''}}"
+            data-period="1y"
+            bindtap="onSwitchPeriod"
+          >近一年</view>-->
+        </view>
+      </view>
+    </view>
+
+    <view class="chart-wrap">
+      <ec-canvas id="historyChart" canvas-id="historyChart" ec="{{ec}}" />
+      <view wx:if="{{loading}}" class="mask">加载中...</view>
+      <view wx:if="{{!loading && errorText}}" class="mask error">{{errorText}}</view>
+      <view wx:if="{{!loading && !errorText && !hasData}}" class="mask">暂无数据</view>
+    </view>
+  </view>
+</view>

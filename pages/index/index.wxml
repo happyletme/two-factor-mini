@@ -1,0 +1,56 @@
+<view class="container">
+
+  <!-- 1. 顶部 Banner (行情看板) -->
+  <view wx:if="{{uiConfig.banner}}" class="banner-card" bindtap="onBannerTap">
+    <view class="banner-header">
+      <text class="banner-title">国内实时金价 (元/克)</text>
+      <text class="banner-time">更新于 {{goldData.updateTime}}</text>
+    </view>
+
+    <view class="banner-main">
+      <text class="price-big">{{goldData.price}}</text>
+      <view class="price-change {{goldData.isUp ? 'up' : 'down'}}">
+        <text>{{goldData.change}}</text>
+        <text class="arrow">{{goldData.isUp ? '▲' : '▼'}}</text>
+      </view>
+    </view>
+
+    <view class="banner-footer">
+      <text>点击查看历史走势 & 国际金价 >></text>
+    </view>
+  </view>
+
+  <!-- 2. 工具金刚区 -->
+  <view wx:if="{{tools.length > 0}}">
+    <view class="section-title">常用工具</view>
+    <view class="tool-grid">
+      <block wx:for="{{tools}}" wx:key="id">
+        <view class="tool-item" bindtap="onToolTap" data-url="{{item.url}}">
+          <view class="tool-icon">{{item.icon}}</view>
+          <text class="tool-name">{{item.name}}</text>
+          <view wx:if="{{item.tag}}" class="tool-tag">{{item.tag}}</view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 3. 品牌金价列表 -->
+  <view wx:if="{{uiConfig.brandPrices}}">
+    <view class="section-title">今日品牌金价</view>
+    <view class="brand-list">
+      <view class="list-header">
+        <text>品牌</text>
+        <text>金饰价格</text>
+        <text>金条价格</text>
+      </view>
+      <block wx:for="{{brandPrices}}" wx:key="name">
+        <view class="list-item">
+          <text class="brand-name">{{item.name}}</text>
+          <text class="brand-price">¥{{item.price}}</text>
+          <text class="brand-price">¥{{item.jintiaoprice}}</text>
+        </view>
+      </block>
+    </view>
+  </view>
+
+</view>

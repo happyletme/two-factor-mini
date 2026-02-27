@@ -1,0 +1,92 @@
+<view class="container">
+  <!-- 顶部导航区 -->
+  <view class="header">
+    <view class="header-left">
+      <text class="title">安全令牌</text>
+      <text class="subtitle">二次验证器</text>
+    </view>
+    <view class="timer-badge">
+      <text class="timer-icon">↻</text>
+      <text>刷新: {{remaining}}s</text>
+    </view>
+  </view>
+
+  <!-- 列表区域 -->
+  <!-- 关键：拖拽时禁止 scroll-view 滚动，防止冲突 -->
+  <scroll-view
+    scroll-y="{{!isDragging}}"
+    class="list"
+    bindscroll="onScroll"
+  >
+    <block wx:if="{{accounts.length > 0}}">
+      <view
+        class="card {{index === draggingIndex ? 'card-hidden' : ''}}"
+        wx:for="{{accounts}}"
+        wx:key="secret"
+        wx:for-index="index"
+        bindtap="copyCode"
+        bindlongpress="onLongPress"
+        bindtouchmove="onTouchMove"
+        bindtouchend="onTouchEnd"
+        data-code="{{item.code}}"
+        data-index="{{index}}"
+      >
+        <view class="card-header">
+          <view class="issuer">{{item.issuer}}</view>
+          <view class="account-name">{{item.account}}</view>
+        </view>
+        <view class="code-container">
+          <text class="code">{{item.code}}</text>
+          <view class="copy-hint">点击复制 / 长按排序</view>
+        </view>
+
+        <!-- 新增：更多操作按钮 (替代原来的长按菜单) -->
+        <view class="more-btn" catchtap="showMenu" data-index="{{index}}">
+          <text class="more-icon">•••</text>
+        </view>
+      </view>
+      <view class="list-spacer"></view>
+    </block>
+
+    <!-- 空状态 -->
+    <block wx:else>
+      <view class="empty-state">
+        <view class="empty-icon">
+          <view class="icon-shield"></view>
+        </view>
+        <text class="empty-title">暂无安全令牌</text>
+        <text class="empty-desc">添加账号以开启两步验证保护</text>
+      </view>
+    </block>
+  </scroll-view>
+
+  <!-- 拖拽时的影子元素 (Ghost) -->
+  <view
+    class="card ghost-card"
+    wx:if="{{isDragging && draggingAccount}}"
+    style="top: {{ghostY}}px;"
+  >
+    <view class="card-header">
+      <view class="issuer">{{draggingAccount.issuer}}</view>
+      <view class="account-name">{{draggingAccount.account}}</view>
+    </view>
+    <view class="code-container">
+      <text class="code">{{draggingAccount.code}}</text>
+    </view>
+  </view>
+
+    <!-- 底部按钮 -->
+  <view class="footer">
+    <view class="btn-group">
+      <!-- 次要按钮：云操作 -->
+      <button class="action-btn secondary-btn" bindtap="goToMe">
+        <text class="btn-icon">☁️</text> 云操作
+      </button>
+
+      <!-- 主要按钮：添加账号 -->
+      <button class="action-btn primary-btn" bindtap="goToAdd">
+        <text class="btn-icon">+</text> 添加账号
+      </button>
+    </view>
+  </view>
+</view>

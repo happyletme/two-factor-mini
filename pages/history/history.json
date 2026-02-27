@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "历史走势",
+  "enablePullDownRefresh": true,
+  "navigationBarBackgroundColor": "#d69e2e",
+  "navigationBarTextStyle": "white",
+  "usingComponents": {
+    "ec-canvas": "/ec-canvas/ec-canvas"
+  }
+}

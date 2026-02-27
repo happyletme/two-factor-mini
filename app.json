@@ -1,0 +1,20 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/token/token",
+    "pages/me/me",
+    "pages/add/add",
+    "pages/assets/assets",
+    "pages/tools/calculator",
+    "pages/exchange/exchange",
+    "pages/history/history"
+  ],
+  "window": {
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#d69e2e",
+    "navigationBarTitleText": "工具集合",
+    "navigationBarTextStyle": "white"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

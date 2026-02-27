@@ -1,0 +1,45 @@
+<view class="container">
+  <view class="header">
+    <text class="desc">手动同步：点击按钮才会与服务器交互</text>
+  </view>
+
+  <!-- 顶部：分享工具 -->
+  <view class="card">
+    <button
+      class="main-btn scan-btn"
+      open-type="share"
+      disabled="{{loadingBackup || loadingRestore}}"
+    >
+      <text class="btn-icon">⇪</text> 分享工具
+    </button>
+    <text class="hint">分享工具</text>
+  </view>
+
+  <view class="card">
+    <button
+      class="main-btn save-btn"
+      bindtap="onBackup"
+      loading="{{loadingBackup}}"
+      disabled="{{loadingBackup || loadingRestore}}"
+    >
+      <text class="btn-icon">✓</text> 数据备份
+    </button>
+    <text class="hint">将本地账号列表上传到服务器</text>
+  </view>
+
+  <view class="card">
+    <button
+      class="main-btn danger-btn"
+      bindtap="onRestore"
+      loading="{{loadingRestore}}"
+      disabled="{{loadingBackup || loadingRestore}}"
+    >
+      <text class="btn-icon">↻</text> 数据恢复
+    </button>
+    <text class="hint">从服务器拉取账号列表并覆盖本地</text>
+  </view>
+
+  <view class="tip">
+    <text>提示：恢复会覆盖本地当前数据，请谨慎操作。</text>
+  </view>
+</view>

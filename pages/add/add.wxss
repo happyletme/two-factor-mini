@@ -1,0 +1,117 @@
+/* pages/add/add.wxss */
+page {
+  background-color: #f7f8fa; /* 与首页一致的背景 */
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
+}
+
+.container {
+  padding: 40rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* --- 头部样式 --- */
+.header {
+  margin-bottom: 60rpx;
+  margin-top: 20rpx;
+}
+
+.title {
+  display: block;
+  font-size: 48rpx;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 10rpx;
+}
+
+.subtitle {
+  font-size: 26rpx;
+  color: #999;
+}
+
+/* --- 表单样式 --- */
+.form-section {
+  margin-bottom: 80rpx;
+}
+
+.form-group {
+  margin-bottom: 40rpx;
+}
+
+.label {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 16rpx;
+  margin-left: 4rpx;
+}
+
+.input {
+  background-color: #ffffff;
+  height: 110rpx; /* 增加高度，更易点击 */
+  padding: 0 30rpx;
+  border-radius: 24rpx; /* 更圆润的角 */
+  font-size: 32rpx;
+  color: #333;
+  /* 去掉边框，改用轻微阴影，更有质感 */
+  border: none;
+  box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.02);
+  transition: all 0.2s;
+}
+
+/* 输入框聚焦时的效果（可选，增加交互感） */
+.input:active, .input:focus {
+  background-color: #fff;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+}
+
+.input-placeholder {
+  color: #ccc;
+}
+
+/* --- 按钮通用样式 --- */
+.btn-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30rpx;
+}
+
+.main-btn {
+  width: 100% !important;
+  height: 110rpx;
+  line-height: 110rpx;
+  border-radius: 55rpx;
+  font-size: 34rpx;
+  font-weight: bold;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  transition: transform 0.1s;
+}
+
+.main-btn:active {
+  transform: scale(0.98);
+}
+
+.btn-icon {
+  margin-right: 16rpx;
+  font-size: 36rpx;
+  font-weight: normal;
+}
+
+/* --- 扫描按钮 (渐变蓝) --- */
+.scan-btn {
+  background: linear-gradient(135deg, #3a7afe, #2563eb);
+  /* 蓝色弥散阴影 */
+  box-shadow: 0 15rpx 30rpx rgba(37, 99, 235, 0.3);
+}
+
+/* --- 保存按钮 (渐变绿) --- */
+.save-btn {
+  background: linear-gradient(135deg, #07c160, #05a350);
+  /* 绿色弥散阴影 */
+  box-shadow: 0 15rpx 30rpx rgba(7, 193, 96, 0.3);
+}
