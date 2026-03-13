@@ -1,7 +1,7 @@
 // pages/exchange/exchange.js
-const { fetchExchangeRates } = require('../../utils/cloud.js');
+const { fetchExchangeRates,fetchExchangeRatesNew } = require('../../utils/cloud.js');
 
-const HOT_CURRENCIES = ['CNY', 'USD', 'EUR', 'JPY', 'GBP', 'HKD', 'AUD', 'CAD', 'SGD', 'CHF', 'KRW'];
+const HOT_CURRENCIES = ['CNY', 'USD', 'EUR', 'JPY', 'GBP', 'HKD', 'AUD', 'CAD', 'SGD', 'CHF', 'KRW', 'MYR', 'THB', 'VND'];
 
 const CURRENCY_META = {
   CNY: { name: '人民币', symbol: '¥', flag: '🇨🇳' },
@@ -15,7 +15,11 @@ const CURRENCY_META = {
   SGD: { name: '新加坡元', symbol: 'S$', flag: '🇸🇬' },
   CHF: { name: '瑞士法郎', symbol: 'CHF', flag: '🇨🇭' },
   KRW: { name: '韩元', symbol: '₩', flag: '🇰🇷' },
+  MYR: { name: '马来西亚林吉特', symbol: 'RM', flag: '🇲🇾' },
+  THB: { name: '泰铢', symbol: '฿', flag: '🇹🇭' },
+  VND: { name: '越南盾', symbol: '₫', flag: '🇻🇳' },
 };
+
 
 function formatRate(code, val) {
   if (code === 'JPY' || code === 'KRW') return Number(val).toFixed(4);
@@ -53,9 +57,9 @@ Page({
     try {
       // 你当前封装是固定 CNY URL。如果你要支持切换基准，
       // 建议把 fetchExchangeRates(base) 做成可传参。
-      const rateRes = await fetchExchangeRates(this.data.baseCurrency);
+      const rateRes = await fetchExchangeRatesNew(this.data.baseCurrency);
 
-      const ratesMap = rateRes && rateRes.conversion_rates ? rateRes.conversion_rates : {};
+      const ratesMap = rateRes && rateRes.rates ? rateRes.rates : {};
       const updatedAt = rateRes && (rateRes.time_last_update_utc || rateRes.time_next_update_utc || '');
 
       const list = HOT_CURRENCIES.map((code) => {

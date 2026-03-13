@@ -96,7 +96,7 @@ async function getGoldPriceInCNY() {
     // Promise.all 接收一个数组，只有当两个请求都成功时才会继续
     const [goldRes, rateRes] = await Promise.all([
       fetchExternalPrice('XAU'), // 获取国际金价
-      fetchExchangeRates()       // 获取汇率
+      fetchExchangeRatesNew()       // 获取汇率
     ]);
 
     // 2. 提取数据
@@ -105,7 +105,7 @@ async function getGoldPriceInCNY() {
 
     // 获取 1 CNY 兑换多少 USD
     // 你的汇率接口 base_code 是 CNY，所以 conversion_rates.USD 代表 1元人民币 = 多少美元
-    const usdRate = rateRes.conversion_rates.USD;
+    const usdRate = rateRes.rates.USD;
 
     if (!usdRate) {
       throw new Error('未找到美元汇率数据');
@@ -224,6 +224,23 @@ async function fetchExchangeRates(base = 'CNY') {
   return new Promise((resolve, reject) => {
     wx.request({
       url: `https://v6.exchangerate-api.com/v6/353b7bd3ed66da178b3923c1/latest/${base}`,
+      method: 'GET',
+      header: { 'content-type': 'application/json' },
+      timeout: 8000,
+      success: (res) => {
+        const ok = res.statusCode >= 200 && res.statusCode < 300;
+        if (ok) return resolve(res.data);
+        reject(new Error(`HTTP ${res.statusCode}`));
+      },
+      fail: (err) => reject(err),
+    });
+  });
+}
+
+async function fetchExchangeRatesNew(base = 'CNY') {
+  return new Promise((resolve, reject) => {
+    wx.request({
+      url: `https://api.exchangerate-api.com/v4/latest/${base}`,
       method: 'GET',
       header: { 'content-type': 'application/json' },
       timeout: 8000,
@@ -360,6 +377,7 @@ module.exports = {
   fetchDomesticGoldPrices,
   fetchShanghaiGoldPrice,
   fetchExchangeRates,
+  fetchExchangeRatesNew,
   getGoldPriceInCNY,
   fetchOHLC,
   fetchHistoryPrices,

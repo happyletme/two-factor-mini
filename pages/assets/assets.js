@@ -3,7 +3,8 @@ import {
   fetchDomesticGoldPrices,
   fetchExternalPrice,
   fetchShanghaiGoldPrice,
-  fetchExchangeRates // <--- 1. 引入新方法
+  fetchExchangeRates, // <--- 1. 引入新方法
+    fetchExchangeRatesNew
 } from '../../utils/cloud';
 
 // ... (保留之前的 GLOBAL_ASSETS_CONFIG) ...
@@ -231,9 +232,9 @@ Page({
 
   // --- 4. 新增：加载汇率数据 ---
   async loadCurrencyData() {
-    const res = await fetchExchangeRates();
+    const res = await fetchExchangeRatesNew();
     if (res.result === 'success' && res.conversion_rates) {
-      const rates = res.conversion_rates;
+      const rates = res.rates;
       const list = [];
 
       // === 修改开始：格式化时间为 YYYY-MM-DD ===

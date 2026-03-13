@@ -213,6 +213,34 @@ Page({
     wx.navigateTo({ url: '/pages/history/history' });
   },
 
+    // 分享给好友
+  onShareAppMessage() {
+    const { price, updateTime } = this.data.goldData || {};
+    const hasPrice = price && price !== '--.--';
+    const title = hasPrice
+      ? `当前黄金价格：¥${price}/克，快来看看`
+      : '实时黄金价格查询，快来看看今天金价';
+
+    return {
+      title,
+      path: '/pages/index/index', // 按你的首页实际路径改
+    };
+  },
+
+  // 分享到朋友圈（可选）
+  onShareTimeline() {
+    const { price, updateTime } = this.data.goldData || {};
+    const hasPrice = price && price !== '--.--';
+
+    return {
+      title: hasPrice
+        ? `黄金 ¥${price}/克，快来看看`
+        : '实时黄金价格',
+      query: '', // 需要参数可在这里拼
+    };
+  },
+
+
   // --- 修改：点击工具时带上金价参数 ---
   onToolTap(e) {
     let { url } = e.currentTarget.dataset;
