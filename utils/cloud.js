@@ -4,6 +4,8 @@
 // - POST /api/restore            {}            (Authorization: Bearer token)
 
 const TOKEN_KEY = 'cloud_session_token';
+const EXCHANGE_RATE_CACHE_PREFIX = 'exchange_rate_cache_v1';
+const REQUEST_TIMEOUT = 8000;
 
 // TODO: replace with your HTTPS backend domain, e.g. https://api.example.com
 const BASE_URL = 'https://api.yuanquanquan.xyz:8443';
@@ -11,6 +13,7 @@ const BASE_URL = 'https://api.yuanquanquan.xyz:8443';
 // 常量定义
 const TROY_OUNCE_IN_GRAMS = 31.1034768; // 1金衡盎司等于多少克
 const USE_HISTORY_MOCK = false; // 先开着，联调真实接口时改成 false
+const inflightRequests = new Map();
 
 
 function getToken() {
@@ -21,8 +24,77 @@ function setToken(token) {
   wx.setStorageSync(TOKEN_KEY, token || '');
 }
 
-function request(method, path, data, needAuth) {
-  return new Promise((resolve, reject) => {
+function isAbsoluteUrl(path) {
+  return /^https?:\/\//.test(path);
+}
+
+function buildUrl(path) {
+  return isAbsoluteUrl(path) ? path : `${BASE_URL}${path}`;
+}
+
+function stableStringify(value) {
+  if (!value || typeof value !== 'object') {
+    return JSON.stringify(value);
+  }
+
+  if (Array.isArray(value)) {
+    return `[${value.map(stableStringify).join(',')}]`;
+  }
+
+  const keys = Object.keys(value).sort();
+  const items = keys.map((key) => `"${key}":${stableStringify(value[key])}`);
+  return `{${items.join(',')}}`;
+}
+
+function createRequestKey(method, url, data, needAuth) {
+  const authKey = needAuth ? getToken() : '';
+  return [method, url, stableStringify(data), authKey].join('::');
+}
+
+function createHttpError(res) {
+  const err = new Error(res && res.data && res.data.error ? res.data.error : `HTTP ${res.statusCode}`);
+  err.statusCode = res && res.statusCode;
+  err.data = res && res.data;
+  return err;
+}
+
+function getTodayKey() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getExchangeRateCacheKey(provider, base) {
+  return `${EXCHANGE_RATE_CACHE_PREFIX}:${provider}:${String(base || 'CNY').toUpperCase()}`;
+}
+
+function getExchangeRateCache(provider, base) {
+  const cache = wx.getStorageSync(getExchangeRateCacheKey(provider, base));
+  if (!cache || typeof cache !== 'object') return null;
+  if (cache.date !== getTodayKey()) return null;
+  if (!cache.data || typeof cache.data !== 'object') return null;
+  return cache.data;
+}
+
+function setExchangeRateCache(provider, base, data) {
+  wx.setStorageSync(getExchangeRateCacheKey(provider, base), {
+    date: getTodayKey(),
+    data,
+  });
+}
+
+function requestJson(method, path, data, options = {}) {
+  const { needAuth = false, dedupe = true, timeout = REQUEST_TIMEOUT } = options;
+  const url = buildUrl(path);
+  const requestKey = createRequestKey(method, url, data, needAuth);
+
+  if (dedupe && inflightRequests.has(requestKey)) {
+    return inflightRequests.get(requestKey);
+  }
+
+  const promise = new Promise((resolve, reject) => {
     const header = { 'content-type': 'application/json' };
 
     if (needAuth) {
@@ -31,19 +103,34 @@ function request(method, path, data, needAuth) {
     }
 
     wx.request({
-      url: `${BASE_URL}${path}`,
+      url,
       method,
       data,
       header,
-      timeout: 8000,
+      timeout,
       success: (res) => {
         const ok = res.statusCode >= 200 && res.statusCode < 300;
-        if (ok) return resolve(res.data);
-        reject(new Error(res.data && res.data.error ? res.data.error : `HTTP ${res.statusCode}`));
+        if (ok) {
+          resolve(res.data);
+          return;
+        }
+        reject(createHttpError(res));
       },
       fail: (err) => reject(err),
     });
+  }).finally(() => {
+    inflightRequests.delete(requestKey);
   });
+
+  if (dedupe) {
+    inflightRequests.set(requestKey, promise);
+  }
+
+  return promise;
+}
+
+function request(method, path, data, needAuth) {
+  return requestJson(method, path, data, { needAuth });
 }
 
 async function login() {
@@ -137,20 +224,7 @@ async function getGoldPriceInCNY() {
 // 新增：获取外部金价/银价 API
 // symbol 例如: "XAG", "XAU"
 async function fetchExternalPrice(symbol) {
-  return new Promise((resolve, reject) => {
-    wx.request({
-      url: `https://api.gold-api.com/price/${symbol}`, // 直接使用完整 URL
-      method: 'GET',
-      header: { 'content-type': 'application/json' },
-      timeout: 8000,
-      success: (res) => {
-        const ok = res.statusCode >= 200 && res.statusCode < 300;
-        if (ok) return resolve(res.data);
-        reject(new Error(`HTTP ${res.statusCode}`));
-      },
-      fail: (err) => reject(err),
-    });
-  });
+  return requestJson('GET', `https://api.gold-api.com/price/${symbol}`, {}, { needAuth: false });
 }
 
 // [新增] 获取昨日收盘价 (OHLC)
@@ -165,20 +239,7 @@ async function fetchOHLC(timestamp) {
 // 新增：获取国内十大金店价格 (每日金价)
 // URL: https://api.lolimi.cn/API/huangj/api.php
 async function fetchDomesticGoldPrices() {
-  return new Promise((resolve, reject) => {
-    wx.request({
-      url: 'https://api.lolimi.cn/API/huangj/api.php',
-      method: 'GET',
-      header: { 'content-type': 'application/json' },
-      timeout: 8000,
-      success: (res) => {
-        const ok = res.statusCode >= 200 && res.statusCode < 300;
-        if (ok) return resolve(res.data);
-        reject(new Error(`HTTP ${res.statusCode}`));
-      },
-      fail: (err) => reject(err),
-    });
-  });
+  return requestJson('GET', 'https://api.lolimi.cn/API/huangj/api.php', {}, { needAuth: false });
 }
 
 // 新增：获取首页 UI 配置
@@ -204,54 +265,39 @@ async function fetchUIConfig() {
 // 新增：获取国内上海现货黄金T+D价格
 // URL: https://api.freejk.com/shuju/jinjia/
 async function fetchShanghaiGoldPrice() {
-  return new Promise((resolve, reject) => {
-    wx.request({
-      url: 'https://api.freejk.com/shuju/jinjia/',
-      method: 'GET',
-      header: { 'content-type': 'application/json' },
-      timeout: 8000,
-      success: (res) => {
-        const ok = res.statusCode >= 200 && res.statusCode < 300;
-        if (ok) return resolve(res.data);
-        reject(new Error(`HTTP ${res.statusCode}`));
-      },
-      fail: (err) => reject(err),
-    });
-  });
+  return requestJson('GET', 'https://api.freejk.com/shuju/jinjia/', {}, { needAuth: false });
 }
 
 async function fetchExchangeRates(base = 'CNY') {
-  return new Promise((resolve, reject) => {
-    wx.request({
-      url: `https://v6.exchangerate-api.com/v6/353b7bd3ed66da178b3923c1/latest/${base}`,
-      method: 'GET',
-      header: { 'content-type': 'application/json' },
-      timeout: 8000,
-      success: (res) => {
-        const ok = res.statusCode >= 200 && res.statusCode < 300;
-        if (ok) return resolve(res.data);
-        reject(new Error(`HTTP ${res.statusCode}`));
-      },
-      fail: (err) => reject(err),
-    });
-  });
+  const normalizedBase = String(base || 'CNY').toUpperCase();
+  const cached = getExchangeRateCache('v6', normalizedBase);
+  if (cached) return cached;
+
+  const data = await requestJson(
+    'GET',
+    `https://v6.exchangerate-api.com/v6/353b7bd3ed66da178b3923c1/latest/${normalizedBase}`,
+    {},
+    { needAuth: false }
+  );
+
+  setExchangeRateCache('v6', normalizedBase, data);
+  return data;
 }
 
 async function fetchExchangeRatesNew(base = 'CNY') {
-  return new Promise((resolve, reject) => {
-    wx.request({
-      url: `https://api.exchangerate-api.com/v4/latest/${base}`,
-      method: 'GET',
-      header: { 'content-type': 'application/json' },
-      timeout: 8000,
-      success: (res) => {
-        const ok = res.statusCode >= 200 && res.statusCode < 300;
-        if (ok) return resolve(res.data);
-        reject(new Error(`HTTP ${res.statusCode}`));
-      },
-      fail: (err) => reject(err),
-    });
-  });
+  const normalizedBase = String(base || 'CNY').toUpperCase();
+  const cached = getExchangeRateCache('v4', normalizedBase);
+  if (cached) return cached;
+
+  const data = await requestJson(
+    'GET',
+    `https://api.exchangerate-api.com/v4/latest/${normalizedBase}`,
+    {},
+    { needAuth: false }
+  );
+
+  setExchangeRateCache('v4', normalizedBase, data);
+  return data;
 }
 
 
@@ -326,42 +372,33 @@ async function fetchHistoryPrices(symbol = 'XAU', period = '3m') {
     groupBy = 'day';
   }
 
-  return new Promise((resolve, reject) => {
-    wx.request({
-      url: 'https://api.yuanquanquan.xyz:8443/api/history',
-      method: 'GET',
-      timeout: 10000,
-      header: { 'content-type': 'application/json' },
-      data: {
-        symbol,
-        startTimestamp,
-        endTimestamp: nowSec,
-        groupBy,
-      },
-      success: (res) => {
-        const ok = res.statusCode >= 200 && res.statusCode < 300;
-        if (!ok) return reject(new Error(`HTTP ${res.statusCode}`));
+  const raw = await requestJson(
+    'GET',
+    '/api/history',
+    {
+      symbol,
+      startTimestamp,
+      endTimestamp: nowSec,
+      groupBy,
+    },
+    { needAuth: false, timeout: 10000 }
+  );
 
-        const raw = Array.isArray(res.data) ? res.data : [];
-        const list = raw
-          .map((it) => ({
-            day: it.day,
-            avg_price: Number(it.avg_price),
-          }))
-          .filter((it) => it.day && Number.isFinite(it.avg_price));
+  const list = (Array.isArray(raw) ? raw : [])
+    .map((it) => ({
+      day: it.day,
+      avg_price: Number(it.avg_price),
+    }))
+    .filter((it) => it.day && Number.isFinite(it.avg_price));
 
-        resolve({
-          symbol,
-          period,
-          groupBy,
-          startTimestamp,
-          endTimestamp: nowSec,
-          list,
-        });
-      },
-      fail: reject,
-    });
-  });
+  return {
+    symbol,
+    period,
+    groupBy,
+    startTimestamp,
+    endTimestamp: nowSec,
+    list,
+  };
 }
 
 
