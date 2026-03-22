@@ -4,10 +4,11 @@
     "pages/token/token",
     "pages/me/me",
     "pages/add/add",
-    "pages/assets/assets",
     "pages/tools/calculator",
     "pages/exchange/exchange",
-    "pages/history/history"
+    "pages/history/history",
+    "pages/weekly-report/weekly-report",
+    "pages/webview/webview"
   ],
   "window": {
     "backgroundTextStyle": "dark",

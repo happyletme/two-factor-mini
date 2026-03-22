@@ -1,6 +1,5 @@
 {
-  "navigationBarTitleText": "资产行情",
-  "enablePullDownRefresh": true,
+  "navigationBarTitleText": "周报详情",
   "navigationBarBackgroundColor": "#d69e2e",
   "navigationBarTextStyle": "white"
 }

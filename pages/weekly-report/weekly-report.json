@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "黄金周报",
+  "navigationBarBackgroundColor": "#b7791f",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#f7f3ea",
+  "backgroundTextStyle": "dark",
+  "enablePullDownRefresh": true
+}

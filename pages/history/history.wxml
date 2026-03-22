@@ -1,5 +1,97 @@
 <view class="page">
-  <view class="card">
+  <view wx:if="{{!configLoaded}}" class="config-loading-card">
+    <view class="config-loading-text">正在获取页面配置...</view>
+  </view>
+
+  <view wx:elif="{{!uiConfig.banner}}" class="retirement-panel">
+    <view class="retirement-hero-card">
+      <view class="retirement-hero-title">退休年龄计算器</view>
+      <view class="retirement-hero-sub">按出生年月、人员类型与延迟月数，快速测算退休时间</view>
+
+      <view wx:if="{{retirementResult.hasResult}}" class="retirement-main-result">
+        <text class="retirement-main-label">预计退休时间</text>
+        <text class="retirement-main-value">{{retirementResult.delayedRetireDateText}}</text>
+      </view>
+    </view>
+
+    <view class="retirement-form-card">
+      <view class="retirement-field-row">
+        <text class="retirement-field-label">出生年份</text>
+        <picker mode="selector" range="{{birthYearOptions}}" value="{{birthYearIndex}}" bindchange="onBirthYearChange">
+          <view class="retirement-picker-value">{{birthYearOptions[birthYearIndex]}} 年</view>
+        </picker>
+      </view>
+
+      <view class="retirement-field-row">
+        <text class="retirement-field-label">出生月份</text>
+        <picker mode="selector" range="{{birthMonthOptions}}" value="{{birthMonthIndex}}" bindchange="onBirthMonthChange">
+          <view class="retirement-picker-value">{{birthMonthOptions[birthMonthIndex]}} 月</view>
+        </picker>
+      </view>
+
+      <view class="retirement-field-row no-border">
+        <text class="retirement-field-label">延迟退休</text>
+        <input
+          class="retirement-field-input"
+          type="number"
+          value="{{delayMonthsInput}}"
+          bindinput="onInputDelayMonths"
+          placeholder="输入延迟月数"
+          placeholder-class="retirement-placeholder"
+        />
+        <text class="retirement-field-unit">个月</text>
+      </view>
+    </view>
+
+    <view class="retirement-type-row">
+      <block wx:for="{{retirementTypeOptions}}" wx:key="key">
+        <view
+          class="retirement-type-chip {{item.key === retirementType ? 'active' : ''}}"
+          data-type="{{item.key}}"
+          bindtap="onChangeRetirementType"
+        >{{item.label}}</view>
+      </block>
+    </view>
+
+    <view class="retirement-summary-card" wx:if="{{retirementResult.hasResult}}">
+      <view class="retirement-summary-row">
+        <text class="retirement-summary-label">当前状态</text>
+        <text class="retirement-summary-value">{{retirementResult.statusText}}</text>
+      </view>
+      <view class="retirement-summary-row">
+        <text class="retirement-summary-label">基础退休年龄</text>
+        <text class="retirement-summary-value">{{retirementResult.baseRetireAgeText}}</text>
+      </view>
+      <view class="retirement-summary-row">
+        <text class="retirement-summary-label">基础退休时间</text>
+        <text class="retirement-summary-value">{{retirementResult.baseRetireDateText}}</text>
+      </view>
+      <view class="retirement-summary-row">
+        <text class="retirement-summary-label">延迟后退休年龄</text>
+        <text class="retirement-summary-value">{{retirementResult.delayedRetireAgeText}}</text>
+      </view>
+      <view class="retirement-summary-row">
+        <text class="retirement-summary-label">延迟后退休时间</text>
+        <text class="retirement-summary-value">{{retirementResult.delayedRetireDateText}}</text>
+      </view>
+      <view class="retirement-summary-row">
+        <text class="retirement-summary-label">延迟月数</text>
+        <text class="retirement-summary-value">{{retirementResult.delayMonths}} 个月</text>
+      </view>
+      <view class="retirement-summary-row no-border">
+        <text class="retirement-summary-label">退休倒计时</text>
+        <text class="retirement-summary-value">{{retirementResult.remainText}}</text>
+      </view>
+    </view>
+
+    <button class="retirement-reset-btn" bindtap="onResetRetirement">重置清空</button>
+
+    <view class="retirement-tip">
+      说明：该工具用于快速测算，最终退休年龄与退休时间请以当地政策与单位办理结果为准。
+    </view>
+  </view>
+
+  <view wx:else class="card">
     <view class="header">
       <text class="title">国际{{symbolLabel}} 历史走势</text>
 

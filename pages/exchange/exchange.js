@@ -1,5 +1,5 @@
 // pages/exchange/exchange.js
-const { fetchExchangeRates,fetchExchangeRatesNew } = require('../../utils/cloud.js');
+const { fetchExchangeRatesNew, fetchUIConfig } = require('../../utils/cloud.js');
 
 const HOT_CURRENCIES = ['CNY', 'USD', 'EUR', 'JPY', 'GBP', 'HKD', 'AUD', 'CAD', 'SGD', 'CHF', 'KRW', 'MYR', 'THB', 'VND'];
 
@@ -20,6 +20,47 @@ const CURRENCY_META = {
   VND: { name: '越南盾', symbol: '₫', flag: '🇻🇳' },
 };
 
+const DEFAULT_ANNUAL_RATE = '3.1';
+const DEFAULT_LOAN_YEARS = '30';
+
+function buildEmptyMortgageResult() {
+  return {
+    hasResult: false,
+    principal: '0.00',
+    totalPayment: '0.00',
+    totalInterest: '0.00',
+    monthlyPayment: '0.00',
+    firstMonthPayment: '0.00',
+    lastMonthPayment: '0.00',
+    monthlyDecrease: '0.00',
+    months: 0,
+  };
+}
+
+function normalizeDecimalInput(value, decimalPlaces = 3) {
+  const sanitized = String(value || '').replace(/[^\d.]/g, '');
+  if (!sanitized) return '';
+
+  const firstDotIndex = sanitized.indexOf('.');
+  if (firstDotIndex === -1) return sanitized;
+
+  const intPart = sanitized.slice(0, firstDotIndex);
+  const decimalPart = sanitized.slice(firstDotIndex + 1).replace(/\./g, '').slice(0, decimalPlaces);
+  return decimalPart ? `${intPart}.${decimalPart}` : `${intPart}.`;
+}
+
+function normalizeIntegerInput(value) {
+  return String(value || '').replace(/\D/g, '');
+}
+
+function formatMoney(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '0.00';
+  const fixed = n.toFixed(2);
+  const [intPart, decimalPart] = fixed.split('.');
+  return `${intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}.${decimalPart}`;
+}
+
 
 function formatRate(code, val) {
   if (code === 'JPY' || code === 'KRW') return Number(val).toFixed(4);
@@ -35,6 +76,17 @@ function formatAmount(code, val) {
 
 Page({
   data: {
+    uiConfig: {
+      banner: false,
+    },
+    configLoaded: false,
+
+    loanAmount: '',
+    annualRate: DEFAULT_ANNUAL_RATE,
+    loanYears: DEFAULT_LOAN_YEARS,
+    repaymentType: 'equal_installment',
+    mortgageResult: buildEmptyMortgageResult(),
+
     loading: false,
     errorText: '',
     updatedAt: '',
@@ -49,7 +101,27 @@ Page({
   },
 
   onLoad() {
-    this.loadRates();
+    this.initPage();
+  },
+
+  async initPage() {
+    try {
+      const cfg = await fetchUIConfig();
+      const banner = !!(cfg && cfg.banner);
+      this.setData({
+        uiConfig: { banner },
+        configLoaded: true,
+      });
+
+      if (banner) {
+        this.loadRates();
+      }
+    } catch (e) {
+      this.setData({
+        uiConfig: { banner: false },
+        configLoaded: true,
+      });
+    }
   },
 
   async loadRates() {
@@ -97,6 +169,118 @@ Page({
     this.setData({ amount: value }, () => this.rebuildList());
   },
 
+  onMortgageInput(e) {
+    const field = e.currentTarget.dataset.field;
+    if (!field) return;
+
+    const rawValue = e.detail.value;
+    let value = rawValue;
+
+    if (field === 'loanYears') {
+      value = normalizeIntegerInput(rawValue);
+    } else if (field === 'loanAmount') {
+      value = normalizeDecimalInput(rawValue, 2);
+    } else if (field === 'annualRate') {
+      value = normalizeDecimalInput(rawValue, 3);
+    }
+
+    this.setData({ [field]: value }, () => this.calculateMortgage());
+  },
+
+  onChangeRepaymentType(e) {
+    const type = e.currentTarget.dataset.type;
+    if (!type || type === this.data.repaymentType) return;
+
+    this.setData({ repaymentType: type }, () => this.calculateMortgage());
+  },
+
+  onResetMortgage() {
+    this.setData({
+      loanAmount: '',
+      annualRate: DEFAULT_ANNUAL_RATE,
+      loanYears: DEFAULT_LOAN_YEARS,
+      repaymentType: 'equal_installment',
+      mortgageResult: buildEmptyMortgageResult(),
+    });
+  },
+
+  calculateMortgage() {
+    const principalWan = Number(this.data.loanAmount);
+    const annualRate = Number(this.data.annualRate);
+    const years = Number(this.data.loanYears);
+
+    if (
+      !Number.isFinite(principalWan) ||
+      principalWan <= 0 ||
+      !Number.isFinite(annualRate) ||
+      annualRate < 0 ||
+      !Number.isFinite(years) ||
+      years <= 0
+    ) {
+      this.setData({ mortgageResult: buildEmptyMortgageResult() });
+      return;
+    }
+
+    const principal = principalWan * 10000;
+    const months = Math.round(years * 12);
+    const monthlyRate = annualRate / 100 / 12;
+
+    if (months <= 0) {
+      this.setData({ mortgageResult: buildEmptyMortgageResult() });
+      return;
+    }
+
+    const isEqualPrincipal = this.data.repaymentType === 'equal_principal';
+    let monthlyPayment = 0;
+    let firstMonthPayment = 0;
+    let lastMonthPayment = 0;
+    let monthlyDecrease = 0;
+    let totalInterest = 0;
+    let totalPayment = 0;
+
+    if (isEqualPrincipal) {
+      const monthlyPrincipal = principal / months;
+
+      if (monthlyRate === 0) {
+        firstMonthPayment = monthlyPrincipal;
+        lastMonthPayment = monthlyPrincipal;
+        monthlyDecrease = 0;
+        totalInterest = 0;
+      } else {
+        firstMonthPayment = monthlyPrincipal + principal * monthlyRate;
+        monthlyDecrease = monthlyPrincipal * monthlyRate;
+        lastMonthPayment = monthlyPrincipal + monthlyPrincipal * monthlyRate;
+        totalInterest = (principal * monthlyRate * (months + 1)) / 2;
+      }
+
+      totalPayment = principal + totalInterest;
+    } else {
+      if (monthlyRate === 0) {
+        monthlyPayment = principal / months;
+      } else {
+        const factor = Math.pow(1 + monthlyRate, months);
+        monthlyPayment = (principal * monthlyRate * factor) / (factor - 1);
+      }
+
+      totalPayment = monthlyPayment * months;
+      totalInterest = totalPayment - principal;
+    }
+
+    this.setData({
+      mortgageResult: {
+        hasResult: true,
+        principal: formatMoney(principal),
+        totalPayment: formatMoney(totalPayment),
+        totalInterest: formatMoney(totalInterest),
+        monthlyPayment: formatMoney(monthlyPayment),
+        firstMonthPayment: formatMoney(firstMonthPayment),
+        lastMonthPayment: formatMoney(lastMonthPayment),
+        monthlyDecrease: formatMoney(monthlyDecrease),
+        months,
+      },
+    });
+  },
+
   onChangeBase(e) {
     const code = e.currentTarget.dataset.code;
     if (!code || code === this.data.baseCurrency) return;
@@ -132,7 +316,7 @@ Page({
   },
   onShareAppMessage() {
     return {
-      title: '汇率换算',
+      title: this.data.uiConfig.banner ? '汇率换算' : '房贷计算器',
       path: '/pages/exchange/exchange'
     }
   }
@@ -140,7 +324,7 @@ Page({
 
   onShareTimeline: function () {
     return {
-      title: '汇率换算',
+      title: this.data.uiConfig.banner ? '汇率换算' : '房贷计算器',
       query: '/pages/exchange/exchange',
     };
   }

@@ -5,6 +5,217 @@
   box-sizing: border-box;
 }
 
+.config-loading-card {
+  margin-top: 28vh;
+  background: #fff;
+  border-radius: 22rpx;
+  padding: 36rpx 28rpx;
+  box-shadow: 0 8rpx 24rpx rgba(15, 23, 42, 0.06);
+}
+
+.config-loading-text {
+  text-align: center;
+  color: #6b7280;
+  font-size: 28rpx;
+}
+
+.mortgage-panel {
+  padding-bottom: 20rpx;
+}
+
+.mortgage-hero-card {
+  border-radius: 26rpx;
+  padding: 30rpx;
+  color: #fff;
+  margin-bottom: 22rpx;
+  background: linear-gradient(140deg, #11141a 0%, #222833 56%, #0f1116 100%);
+  box-shadow: 0 16rpx 36rpx rgba(11, 13, 18, 0.24);
+  position: relative;
+  overflow: hidden;
+}
+
+.mortgage-hero-card::after {
+  content: '';
+  position: absolute;
+  right: -80rpx;
+  top: -100rpx;
+  width: 280rpx;
+  height: 280rpx;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.26), rgba(212, 175, 55, 0));
+}
+
+.mortgage-hero-title {
+  font-size: 38rpx;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+}
+
+.mortgage-hero-sub {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.74);
+  position: relative;
+  z-index: 1;
+}
+
+.mortgage-main-result {
+  margin-top: 24rpx;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+.mortgage-main-label {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.mortgage-main-value {
+  margin-top: 8rpx;
+  font-size: 56rpx;
+  line-height: 1.1;
+  font-weight: 700;
+  color: #f8e9ba;
+}
+
+.mortgage-main-empty {
+  margin-top: 24rpx;
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.74);
+  position: relative;
+  z-index: 1;
+}
+
+.mortgage-form-card {
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(15, 23, 42, 0.06);
+  padding: 0 22rpx;
+}
+
+.mortgage-field-row {
+  min-height: 98rpx;
+  display: flex;
+  align-items: center;
+  border-bottom: 1rpx solid #edf0f3;
+}
+
+.mortgage-field-row.no-border {
+  border-bottom: none;
+}
+
+.mortgage-field-label {
+  width: 180rpx;
+  font-size: 28rpx;
+  color: #111827;
+  font-weight: 600;
+}
+
+.mortgage-field-input {
+  flex: 1;
+  height: 98rpx;
+  text-align: right;
+  font-size: 34rpx;
+  color: #111827;
+  font-weight: 700;
+  padding-right: 14rpx;
+  box-sizing: border-box;
+}
+
+.mortgage-placeholder {
+  color: #c0c7d4;
+  font-weight: 400;
+}
+
+.mortgage-field-unit {
+  width: 80rpx;
+  text-align: right;
+  font-size: 24rpx;
+  color: #6b7280;
+}
+
+.repayment-type-row {
+  margin-top: 16rpx;
+  display: flex;
+  gap: 12rpx;
+}
+
+.repayment-chip {
+  flex: 1;
+  height: 64rpx;
+  line-height: 64rpx;
+  text-align: center;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  color: #6b7280;
+  background: #fff;
+  border: 1rpx solid #e5e7eb;
+}
+
+.repayment-chip.active {
+  color: #1f2937;
+  background: linear-gradient(180deg, #f8e9ba 0%, #d4af37 100%);
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.mortgage-summary-card {
+  margin-top: 18rpx;
+  background: #fff;
+  border-radius: 22rpx;
+  padding: 0 20rpx;
+  box-shadow: 0 8rpx 24rpx rgba(15, 23, 42, 0.06);
+}
+
+.mortgage-summary-row {
+  min-height: 88rpx;
+  border-bottom: 1rpx solid #edf0f3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mortgage-summary-row.no-border {
+  border-bottom: none;
+}
+
+.mortgage-summary-label {
+  font-size: 25rpx;
+  color: #6b7280;
+}
+
+.mortgage-summary-value {
+  font-size: 30rpx;
+  color: #111827;
+  font-weight: 700;
+}
+
+.mortgage-reset-btn {
+  margin-top: 18rpx;
+  background: #fff;
+  color: #6b7280;
+  border: 1rpx solid #d1d5db;
+  border-radius: 50rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+.mortgage-reset-btn::after {
+  border: none;
+}
+
+.mortgage-tip {
+  margin-top: 20rpx;
+  padding: 0 10rpx;
+  font-size: 22rpx;
+  color: #9aa3af;
+  text-align: center;
+  line-height: 1.6;
+}
+
 .hero-card {
   border-radius: 26rpx;
   padding: 30rpx;

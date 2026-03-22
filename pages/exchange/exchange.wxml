@@ -1,59 +1,168 @@
 <view class="exchange-page">
-  <!-- 顶部输入卡 -->
-  <view class="hero-card">
-    <view class="hero-title">实时货币兑换</view>
-    <view class="hero-sub">基准货币：{{baseCurrency}}</view>
+  <view wx:if="{{!configLoaded}}" class="config-loading-card">
+    <view class="config-loading-text">正在获取页面配置...</view>
+  </view>
 
-    <view class="amount-row">
-      <input
-        class="amount-input"
-        type="digit"
-        value="{{amount}}"
-        placeholder="输入金额"
-        bindinput="onInputAmount"
-      />
-      <!--<view class="swap-btn" bindtap="onSwapWithUSD">⇆</view>-->
+  <view wx:elif="{{!uiConfig.banner}}" class="mortgage-panel">
+    <view class="mortgage-hero-card">
+      <view class="mortgage-hero-title">房贷计算器</view>
+      <view class="mortgage-hero-sub">支持等额本息和等额本金，输入后自动计算</view>
+
+      <view wx:if="{{mortgageResult.hasResult}}" class="mortgage-main-result">
+        <text class="mortgage-main-label">{{repaymentType === 'equal_installment' ? '每月月供' : '首月月供'}}</text>
+        <text class="mortgage-main-value">¥ {{repaymentType === 'equal_installment' ? mortgageResult.monthlyPayment : mortgageResult.firstMonthPayment}}</text>
+      </view>
+      <view wx:else class="mortgage-main-empty">请输入贷款金额开始计算</view>
     </view>
 
-    <view class="base-options">
-      <block wx:for="{{hotBaseOptions}}" wx:key="*this">
-        <view
-          class="base-chip {{item === baseCurrency ? 'active' : ''}}"
-          data-code="{{item}}"
-          bindtap="onChangeBase"
-        >
-          {{item}}
+    <view class="mortgage-form-card">
+      <view class="mortgage-field-row">
+        <text class="mortgage-field-label">贷款总额</text>
+        <input
+          class="mortgage-field-input"
+          type="digit"
+          value="{{loanAmount}}"
+          data-field="loanAmount"
+          bindinput="onMortgageInput"
+          placeholder="例如 120"
+          placeholder-class="mortgage-placeholder"
+        />
+        <text class="mortgage-field-unit">万元</text>
+      </view>
+
+      <view class="mortgage-field-row">
+        <text class="mortgage-field-label">贷款年限</text>
+        <input
+          class="mortgage-field-input"
+          type="number"
+          value="{{loanYears}}"
+          data-field="loanYears"
+          bindinput="onMortgageInput"
+          placeholder="例如 30"
+          placeholder-class="mortgage-placeholder"
+        />
+        <text class="mortgage-field-unit">年</text>
+      </view>
+
+      <view class="mortgage-field-row no-border">
+        <text class="mortgage-field-label">年利率</text>
+        <input
+          class="mortgage-field-input"
+          type="digit"
+          value="{{annualRate}}"
+          data-field="annualRate"
+          bindinput="onMortgageInput"
+          placeholder="例如 3.1"
+          placeholder-class="mortgage-placeholder"
+        />
+        <text class="mortgage-field-unit">%</text>
+      </view>
+    </view>
+
+    <view class="repayment-type-row">
+      <view
+        class="repayment-chip {{repaymentType === 'equal_installment' ? 'active' : ''}}"
+        data-type="equal_installment"
+        bindtap="onChangeRepaymentType"
+      >等额本息</view>
+      <view
+        class="repayment-chip {{repaymentType === 'equal_principal' ? 'active' : ''}}"
+        data-type="equal_principal"
+        bindtap="onChangeRepaymentType"
+      >等额本金</view>
+    </view>
+
+    <view class="mortgage-summary-card" wx:if="{{mortgageResult.hasResult}}">
+      <view class="mortgage-summary-row">
+        <text class="mortgage-summary-label">贷款本金</text>
+        <text class="mortgage-summary-value">¥ {{mortgageResult.principal}}</text>
+      </view>
+      <view class="mortgage-summary-row">
+        <text class="mortgage-summary-label">总利息</text>
+        <text class="mortgage-summary-value">¥ {{mortgageResult.totalInterest}}</text>
+      </view>
+      <view class="mortgage-summary-row">
+        <text class="mortgage-summary-label">还款总额</text>
+        <text class="mortgage-summary-value">¥ {{mortgageResult.totalPayment}}</text>
+      </view>
+      <view class="mortgage-summary-row">
+        <text class="mortgage-summary-label">还款期数</text>
+        <text class="mortgage-summary-value">{{mortgageResult.months}} 期</text>
+      </view>
+      <view class="mortgage-summary-row" wx:if="{{repaymentType === 'equal_principal'}}">
+        <text class="mortgage-summary-label">末月月供</text>
+        <text class="mortgage-summary-value">¥ {{mortgageResult.lastMonthPayment}}</text>
+      </view>
+      <view class="mortgage-summary-row no-border" wx:if="{{repaymentType === 'equal_principal'}}">
+        <text class="mortgage-summary-label">每月递减</text>
+        <text class="mortgage-summary-value">¥ {{mortgageResult.monthlyDecrease}}</text>
+      </view>
+    </view>
+
+    <button class="mortgage-reset-btn" bindtap="onResetMortgage">重置清空</button>
+
+    <view class="mortgage-tip">
+      说明：结果为按公式测算，实际放款、利率折扣和还款计划请以银行合同为准。
+    </view>
+  </view>
+
+  <view wx:else>
+    <!-- 顶部输入卡 -->
+    <view class="hero-card">
+      <view class="hero-title">实时货币兑换</view>
+      <view class="hero-sub">基准货币：{{baseCurrency}}</view>
+
+      <view class="amount-row">
+        <input
+          class="amount-input"
+          type="digit"
+          value="{{amount}}"
+          placeholder="输入金额"
+          bindinput="onInputAmount"
+        />
+        <!--<view class="swap-btn" bindtap="onSwapWithUSD">⇆</view>-->
+      </view>
+
+      <view class="base-options">
+        <block wx:for="{{hotBaseOptions}}" wx:key="*this">
+          <view
+            class="base-chip {{item === baseCurrency ? 'active' : ''}}"
+            data-code="{{item}}"
+            bindtap="onChangeBase"
+          >
+            {{item}}
+          </view>
+        </block>
+      </view>
+
+      <view class="update-time" wx:if="{{updatedAt}}">更新时间：{{updatedAt}}</view>
+    </view>
+
+    <!-- 状态 -->
+    <view class="state loading" wx:if="{{loading}}">正在获取汇率...</view>
+    <view class="state error" wx:if="{{!loading && errorText}}">{{errorText}}</view>
+
+    <!-- 列表 -->
+    <view class="rate-list" wx:if="{{!loading && !errorText}}">
+      <view class="list-head">
+        <text class="col currency">币种</text>
+        <text class="col rate">汇率</text>
+        <text class="col result">兑换结果</text>
+      </view>
+
+      <block wx:for="{{list}}" wx:key="code">
+        <view class="list-item">
+          <view class="col currency">
+            <text class="flag">{{item.flag}}</text>
+            <view class="name-wrap">
+              <text class="code">{{item.code}}</text>
+              <text class="name">{{item.name}}</text>
+            </view>
+          </view>
+          <text class="col rate">1 {{baseCurrency}} = {{item.rateText}} {{item.code}}</text>
+          <text class="col result">{{item.symbol}}{{item.convertedText}}</text>
         </view>
       </block>
     </view>
-
-    <view class="update-time" wx:if="{{updatedAt}}">更新时间：{{updatedAt}}</view>
-  </view>
-
-  <!-- 状态 -->
-  <view class="state loading" wx:if="{{loading}}">正在获取汇率...</view>
-  <view class="state error" wx:if="{{!loading && errorText}}">{{errorText}}</view>
-
-  <!-- 列表 -->
-  <view class="rate-list" wx:if="{{!loading && !errorText}}">
-    <view class="list-head">
-      <text class="col currency">币种</text>
-      <text class="col rate">汇率</text>
-      <text class="col result">兑换结果</text>
-    </view>
-
-    <block wx:for="{{list}}" wx:key="code">
-      <view class="list-item">
-        <view class="col currency">
-          <text class="flag">{{item.flag}}</text>
-          <view class="name-wrap">
-            <text class="code">{{item.code}}</text>
-            <text class="name">{{item.name}}</text>
-          </view>
-        </view>
-        <text class="col rate">1 {{baseCurrency}} = {{item.rateText}} {{item.code}}</text>
-        <text class="col result">{{item.symbol}}{{item.convertedText}}</text>
-      </view>
-    </block>
   </view>
 </view>

@@ -261,6 +261,38 @@ async function fetchUIConfig() {
   };
 }
 
+async function fetchGoldWeeklyDashboard() {
+  await ensureLogin();
+  const data = await request('GET', '/api/gold-weekly/dashboard', {}, true);
+  return {
+    subscription: data && data.subscription ? data.subscription : {
+      email: '',
+      enabled: false,
+      last_sent_report_id: null,
+      last_sent_at: null,
+      last_opened_at: null,
+      updated_at: null,
+    },
+    latest_report: data && data.latest_report ? data.latest_report : null,
+    reports: Array.isArray(data && data.reports) ? data.reports : [],
+  };
+}
+
+async function fetchGoldWeeklyReportHtml(url) {
+  const data = await requestJson('GET', url, {}, {
+    needAuth: false,
+    dedupe: false,
+    timeout: 12000,
+  });
+  return typeof data === 'string' ? data : '';
+}
+
+async function saveGoldWeeklySubscription(payload) {
+  await ensureLogin();
+  const data = await request('POST', '/api/gold-weekly/subscription', payload || {}, true);
+  return data && data.subscription ? data.subscription : null;
+}
+
 
 // 新增：获取国内上海现货黄金T+D价格
 // URL: https://api.freejk.com/shuju/jinjia/
@@ -419,4 +451,7 @@ module.exports = {
   fetchOHLC,
   fetchHistoryPrices,
   fetchUIConfig,
+  fetchGoldWeeklyDashboard,
+  fetchGoldWeeklyReportHtml,
+  saveGoldWeeklySubscription,
 };

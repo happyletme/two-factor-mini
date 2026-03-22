@@ -1,0 +1,182 @@
+<view class="page">
+  <view wx:if="{{!configLoaded}}" class="config-loading-card">
+    <view class="config-loading-text">正在获取页面配置...</view>
+  </view>
+
+  <view wx:elif="{{!uiConfig.banner}}" class="random-panel">
+    <view class="random-hero-card">
+      <view class="random-hero-title">随机数工具</view>
+      <view class="random-hero-sub">可配置区间、数量和去重模式，快速生成随机整数。</view>
+    </view>
+
+    <view class="random-form-card">
+      <view class="random-field-row">
+        <text class="random-field-label">最小值</text>
+        <input
+          class="random-field-input"
+          type="text"
+          value="{{randomMin}}"
+          data-field="randomMin"
+          bindinput="onInputRandomField"
+          placeholder="例如 1"
+          placeholder-class="random-placeholder"
+        />
+      </view>
+
+      <view class="random-field-row">
+        <text class="random-field-label">最大值</text>
+        <input
+          class="random-field-input"
+          type="text"
+          value="{{randomMax}}"
+          data-field="randomMax"
+          bindinput="onInputRandomField"
+          placeholder="例如 100"
+          placeholder-class="random-placeholder"
+        />
+      </view>
+
+      <view class="random-field-row no-border">
+        <text class="random-field-label">生成个数</text>
+        <input
+          class="random-field-input"
+          type="number"
+          value="{{randomCount}}"
+          data-field="randomCount"
+          bindinput="onInputRandomField"
+          placeholder="例如 5"
+          placeholder-class="random-placeholder"
+        />
+      </view>
+    </view>
+
+    <view class="random-mode-row">
+      <view
+        class="random-mode-chip {{!randomUnique ? 'active' : ''}}"
+        data-unique="false"
+        bindtap="onToggleRandomUnique"
+      >允许重复</view>
+      <view
+        class="random-mode-chip {{randomUnique ? 'active' : ''}}"
+        data-unique="true"
+        bindtap="onToggleRandomUnique"
+      >不重复</view>
+    </view>
+
+    <view class="random-btn-row">
+      <button class="random-generate-btn" bindtap="onGenerateRandomNumbers">立即生成</button>
+      <button class="random-reset-btn" bindtap="onResetRandomTool">重置</button>
+    </view>
+
+    <view class="random-error" wx:if="{{randomError}}">{{randomError}}</view>
+
+    <view class="random-result-card" wx:if="{{randomResults.length}}">
+      <view class="random-result-head">
+        <text class="random-result-title">生成结果</text>
+        <button class="random-copy-btn" bindtap="onCopyRandomResult">复制</button>
+      </view>
+      <text class="random-result-summary">{{randomSummary}}</text>
+      <view class="random-result-list">
+        <block wx:for="{{randomResults}}" wx:key="index">
+          <text class="random-number-chip">{{item}}</text>
+        </block>
+      </view>
+    </view>
+
+    <view class="random-tip">说明：当前为整数随机，结果仅用于工具性场景。</view>
+  </view>
+
+  <view wx:else>
+    <view class="hero-card">
+    <view class="hero-top">
+      <view>
+        <text class="hero-title">黄金分析周报</text>
+        <text class="hero-subtitle">黄金数字员工，每周推送 HTML 周报到你的邮箱。</text>
+      </view>
+      <view class="hero-badge {{enabled ? 'active' : ''}}">{{enabled ? '订阅中' : '未订阅'}}</view>
+    </view>
+
+    <view class="meta-row">
+      <text wx:if="{{subscriptionMeta.updatedAt}}">更新于 {{subscriptionMeta.updatedAt}}</text>
+      <text wx:if="{{subscriptionMeta.lastSentAt}}">最近发送 {{subscriptionMeta.lastSentAt}}</text>
+      <text wx:if="{{subscriptionMeta.lastOpenedAt}}">最近打开 {{subscriptionMeta.lastOpenedAt}}</text>
+    </view>
+  </view>
+
+  <view class="card subscribe-card">
+    <text class="card-title">邮件订阅</text>
+    <text class="card-desc">填写邮箱后，每周会收到一封 HTML 周报邮件。邮件中的打开与链接点击都会被记录。</text>
+
+    <view class="input-shell">
+      <text class="input-label">接收邮箱</text>
+      <input
+        class="email-input"
+        type="text"
+        value="{{email}}"
+        placeholder="name@example.com"
+        placeholder-class="placeholder"
+        bindinput="onInputEmail"
+      />
+    </view>
+
+    <view class="btn-row">
+      <button class="primary-btn" bindtap="onSubscribe" loading="{{saving}}" disabled="{{saving}}">保存并订阅</button>
+      <button class="ghost-btn" bindtap="onPause" disabled="{{saving}}">暂停推送</button>
+    </view>
+  </view>
+
+  <view class="card latest-card" wx:if="{{latestReport}}">
+    <view class="section-head">
+      <text class="card-title">最新一期</text>
+      <text class="week-chip">{{latestReport.week_label}}</text>
+    </view>
+
+    <text class="report-title">{{latestReport.title}}</text>
+    <text class="report-summary">{{latestReport.summary}}</text>
+
+    <view class="stats-grid">
+      <view class="stat-item">
+        <text class="stat-value">{{latestReport.stats.sent_count}}</text>
+        <text class="stat-label">发送</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{latestReport.stats.open_count}}</text>
+        <text class="stat-label">打开</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{latestReport.stats.click_count}}</text>
+        <text class="stat-label">点击</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{latestReport.stats.page_views}}</text>
+        <text class="stat-label">浏览</text>
+      </view>
+    </view>
+
+    <button class="dark-btn" bindtap="onOpenLatest">查看周报</button>
+  </view>
+
+  <view class="section-head standalone">
+    <text class="card-title">往期周报</text>
+    <text class="list-tip">点击卡片可直接在小程序内预览</text>
+  </view>
+
+  <block wx:for="{{reports}}" wx:key="id">
+    <view class="report-item" bindtap="onOpenReport" data-url="{{item.web_url}}" data-title="{{item.title}}">
+      <view class="report-item-main">
+        <text class="report-item-title">{{item.title}}</text>
+        <text class="report-item-week">{{item.week_label}}</text>
+        <text class="report-item-summary">{{item.summary}}</text>
+      </view>
+      <view class="report-item-side">
+        <text class="side-arrow">查看 ></text>
+      </view>
+    </view>
+  </block>
+
+  <view wx:if="{{!loading && reports.length === 0}}" class="empty-state">
+    <text class="empty-title">{{latestReport ? '暂无往期周报' : '暂无已发布周报'}}</text>
+    <text class="empty-desc">{{latestReport ? '后续发布更多周报后，这里会自动展示历史记录。' : '后端创建并发布第一期后，这里会自动展示。'}}</text>
+  </view>
+  </view>
+</view>

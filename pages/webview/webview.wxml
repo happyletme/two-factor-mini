@@ -1,0 +1,118 @@
+<view class="page">
+  <view wx:if="{{!configLoaded}}" class="state-card">
+    <text class="state-title">正在获取页面配置</text>
+    <text class="state-desc">请稍候...</text>
+  </view>
+
+  <view wx:elif="{{!uiConfig.banner}}" class="bmi-panel">
+    <view class="bmi-hero-card">
+      <view class="bmi-hero-title">BMI体重计算器</view>
+      <view class="bmi-hero-sub">输入身高和体重，快速评估体重状态</view>
+
+      <view wx:if="{{bmiResult.hasResult}}" class="bmi-main-result">
+        <text class="bmi-main-label">当前 BMI</text>
+        <text class="bmi-main-value">{{bmiResult.bmiValue}}</text>
+        <text class="bmi-main-tag" style="color: {{bmiResult.categoryColor}}">{{bmiResult.category}}</text>
+      </view>
+      <view wx:else class="bmi-main-empty">请输入身高和体重开始计算</view>
+    </view>
+
+    <view class="bmi-form-card">
+      <view class="bmi-field-row">
+        <text class="bmi-field-label">身高</text>
+        <input
+          class="bmi-field-input"
+          type="digit"
+          value="{{bmiHeightCm}}"
+          data-field="bmiHeightCm"
+          bindinput="onInputBmiField"
+          placeholder="例如 170"
+          placeholder-class="bmi-placeholder"
+        />
+        <text class="bmi-field-unit">cm</text>
+      </view>
+
+      <view class="bmi-field-row no-border">
+        <text class="bmi-field-label">体重</text>
+        <input
+          class="bmi-field-input"
+          type="digit"
+          value="{{bmiWeightKg}}"
+          data-field="bmiWeightKg"
+          bindinput="onInputBmiField"
+          placeholder="例如 65"
+          placeholder-class="bmi-placeholder"
+        />
+        <text class="bmi-field-unit">kg</text>
+      </view>
+    </view>
+
+    <view class="bmi-summary-card" wx:if="{{bmiResult.hasResult}}">
+      <view class="bmi-summary-row">
+        <text class="bmi-summary-label">体重分级</text>
+        <text class="bmi-summary-value" style="color: {{bmiResult.categoryColor}}">{{bmiResult.category}}</text>
+      </view>
+      <view class="bmi-summary-row">
+        <text class="bmi-summary-label">健康体重范围</text>
+        <text class="bmi-summary-value">{{bmiResult.healthyWeightRange}}</text>
+      </view>
+      <view class="bmi-summary-row">
+        <text class="bmi-summary-label">参考理想体重</text>
+        <text class="bmi-summary-value">{{bmiResult.idealWeight}}</text>
+      </view>
+      <view class="bmi-summary-row">
+        <text class="bmi-summary-label">调整建议</text>
+        <text class="bmi-summary-value">{{bmiResult.weightTip}}</text>
+      </view>
+      <view class="bmi-summary-row no-border">
+        <text class="bmi-summary-label">健康提示</text>
+        <text class="bmi-summary-value">{{bmiResult.advice}}</text>
+      </view>
+    </view>
+
+    <button class="bmi-reset-btn" bindtap="onResetBmi">重置清空</button>
+
+    <view class="bmi-tip">
+      说明：BMI 仅用于体重状态快速评估，不能替代医学诊断。
+    </view>
+  </view>
+
+  <block wx:else>
+    <view wx:if="{{loading}}" class="state-card">
+      <text class="state-title">正在加载周报</text>
+    </view>
+
+    <view wx:elif="{{error}}" class="state-card error-card">
+      <text class="state-title">加载失败</text>
+      <text class="state-desc">{{error}}</text>
+      <button class="retry-btn" bindtap="onRetry">重新加载</button>
+    </view>
+
+    <block wx:else>
+      <view class="hero-card">
+        <text class="hero-eyebrow">Gold Weekly</text>
+        <text class="hero-title">{{title}}</text>
+      </view>
+
+      <view class="report-card">
+        <rich-text class="report-rich-text" nodes="{{contentHtml}}"></rich-text>
+      </view>
+
+      <view wx:if="{{sourceLinks.length}}" class="source-card">
+        <text class="source-title">参考链接</text>
+        <text class="source-desc">为避免外链安全提示，这里只展示直达链接，可点击复制。</text>
+
+        <block wx:for="{{sourceLinks}}" wx:key="url">
+          <view class="source-item">
+            <view class="source-main">
+              <text class="source-label">{{item.label}}</text>
+              <text class="source-host">{{item.host}}</text>
+              <text class="source-url">{{item.url}}</text>
+            </view>
+            <button class="copy-btn" bindtap="onCopySourceLink" data-url="{{item.url}}">复制</button>
+          </view>
+        </block>
+      </view>
+    </block>
+  </block>
+</view>
